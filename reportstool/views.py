@@ -19,6 +19,10 @@ from flask import render_template, request, redirect, url_for, flash, Response, 
 from flask.ext.login import login_required, login_user, logout_user, current_user
 from reportstool import app, login_manager, User
 
+import urllib
+import urllib2
+import json
+
 @app.route('/')
 @login_required
 def index():
@@ -29,6 +33,23 @@ def index():
 def login():
     return render_template("login.html", client_id=app.config['OAUTH_CLIENT_ID'], redirect_uri=app.config['OAUTH_REDIRECT_URI'], csrf='')
 
+@app.route('/internal/oauth')
+def oauth_callback():
+    error = request.args.get('error')
+    if not error:
+        state = request.args.getlist('state')
+        code = request.args.get('code')
+        username = check_mb_account(code)
+        if username:
+            login_user(User(username))
+            flash("Logged in!")
+            return redirect(request.args.get("next") or url_for("index"))
+        else:
+            flash('Incorrect username, please try again.')
+    else:
+        flash('There was an error: ' + error)
+    return render_template("login.html", client_id=app.config['OAUTH_CLIENT_ID'], redirect_uri=app.config['OAUTH_REDIRECT_URI'], csrf='')
+
 @app.route("/logout")
 @login_required
 def logout():
@@ -36,3 +57,20 @@ def logout():
     flash("Logged out.")
     return redirect(url_for("index"))
 
+def check_mb_account(auth_code):
+    url = 'https://musicbrainz.org/oauth2/token'
+    data = urllib.urlencode({'grant_type': 'authorization_code',
+                             'code': auth_code,
+                             'client_id': app.config['OAUTH_CLIENT_ID'],
+                             'client_secret': app.config['OAUTH_CLIENT_SECRET'],
+                             'redirect_uri': app.config['OAUTH_REDIRECT_URI']})
+    json_data = json.load(urllib2.urlopen(url, data))
+
+    url = 'https://beta.musicbrainz.org/oauth2/userinfo'
+    opener = urllib2.build_opener()
+    opener.addheaders = [('Authorization', 'Bearer ' + json_data['access_token'])]
+    try:
+        userdata = json.load(opener.open(url, timeout=5))
+        return userdata['sub']
+    except StandardError:
+        return None
