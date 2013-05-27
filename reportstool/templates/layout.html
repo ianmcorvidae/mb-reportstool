@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+    <head>
+       {% block head %}
+           <title>{% block title %}{% endblock %} - reports tool</title>
+           <link rel="stylesheet" href="/static/styles/main.css">
+       {% endblock %}
+    </head>
+    <body>
+        <div class="container">
+          <div class="content">
+            <div style="float:right">{% block header %}{% endblock %}</div>
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <ul class="flashes">
+                {% for message in messages %}
+                  <li>{{ message }}</li>
+                {% endfor %}
+                </ul>
+              {% endif %}
+            {% endwith %}
+            <h1><a class="head_title" href="/">Reports Tool</a></h1>
+            {% block content %}{% endblock %}
+          </div>
+    </div>
+    {% block js %}{% endblock %}
+    </body>
+</html>

@@ -22,4 +22,4 @@ from reportstool import app, login_manager, User
 # Login/logout-related views
 @app.route('/login')
 def login():
-    return render_template("login.html")
+    return render_template("login.html", client_id=app.config['OAUTH_CLIENT_ID'], redirect_uri=app.config['OAUTH_REDIRECT_URI'], csrf='')

@@ -19,6 +19,8 @@ from flask import Flask
 from flask.ext.login import LoginManager, UserMixin
 
 SECRET_KEY = 'bla'
+OAUTH_CLIENT_ID = ''
+OAUTH_REDIRECT_URI = ''
 
 app = Flask(__name__)
 app.config.from_object(__name__)

@@ -1,0 +1,63 @@
+/* Main element styling */
+body, input, select, button { font-family: sans-serif; color: #111; }
+input:disabled, button:disabled { color: #666 }
+h1, h2, h3, h4 { font-family: sans-serif; }
+a  { color: #442C2C; }
+a:visited  { color: #2C2C44; }
+dl { margin: 0px; }
+ul { margin-bottom: 0px; margin-top: 0px; }
+dt::after { content: ': ' }
+dt, dd { float: left; }
+dt { clear: left; line-height: 20px; }
+dd { line-height: 20px; padding-right: 3px; }
+h1 { margin: 0 }
+hr {
+    margin: 0;
+    color: #bbb;
+    background-color: #bbb;
+    border: 0px;
+    padding: 1px;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+table td, table th {
+     border-top: 1px solid #bbb;
+     padding: 4px;
+     text-align: left;
+}
+
+table tr:last-child td, table tr:last-child th {
+    border-bottom: 1px solid #bbb;
+}
+
+.zebra tbody tr:nth-child(odd) td, .zebra tbody tr:nth-child(odd) th {
+    background-color: #F9F9F9;
+}
+
+.zebra tbody tr:hover td, .zebra tbody tr:hover th {
+    background-color: whitesmoke;
+}
+
+
+.collapse {
+  position: relative;
+  height: 0;
+  overflow: hidden;
+  -webkit-transition: height 0.35s ease;
+     -moz-transition: height 0.35s ease;
+       -o-transition: height 0.35s ease;
+          transition: height 0.35s ease;
+}
+
+/* header styling */
+a.head_title:link { text-decoration: none; color: #111; }
+a.head_title:hover { text-decoration: none; color: #111; }
+a.head_title:visited { text-decoration: none; color: #111; }
+
+/* Main search/header styling */
+ul.flashes { list-style-type: none; padding: 0; float: right; clear: right; }
+ul.flashes li { display: inline-block; background-color: papayawhip; border: 1px solid #bbb; margin: 2px; padding: 2px; border-radius: 2px; }
