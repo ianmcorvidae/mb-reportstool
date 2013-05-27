@@ -1,0 +1,8 @@
+SECRET_KEY = 'seekrit'
+OAUTH_CLIENT_ID = ''
+OAUTH_CLIENT_SECRET = ''
+OAUTH_REDIRECT_URI = ''
+
+PGSQL_DB = 'reportstool'
+PGSQL_USER = 'musicbrainz'
+

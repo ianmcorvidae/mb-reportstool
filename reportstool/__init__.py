@@ -20,13 +20,7 @@ from flask.ext.login import LoginManager, UserMixin
 
 import psycopg2
 
-SECRET_KEY = 'bla'
-OAUTH_CLIENT_ID = ''
-OAUTH_CLIENT_SECRET = ''
-OAUTH_REDIRECT_URI = ''
-
-PGSQL_DB = 'reportstool'
-PGSQL_USER = 'musicbrainz'
+from reportstool.config import *
 
 app = Flask(__name__)
 app.config.from_object(__name__)
