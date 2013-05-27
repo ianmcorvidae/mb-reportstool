@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import division, absolute_import
-from flask import render_template, request, redirect, url_for, flash, Response, g
+from flask import render_template, request, redirect, url_for, flash, Response, g, abort
 from flask.ext.login import login_required, login_user, logout_user, current_user
 from reportstool import app, login_manager, User, db
 
@@ -29,12 +29,61 @@ import psycopg2
 @app.route('/')
 @login_required
 def index():
-    return render_template("index.html")
+    cur = db.cursor()
+    cur.execute("SELECT id, name FROM reports WHERE editor = %s", [current_user.id])
+    if cur.rowcount > 0:
+        reports = cur.fetchall()
+    else:
+        reports = None
+    cur.close()
 
-@app.route('/new')
+    return render_template("index.html", reports=reports)
+
+@app.route('/new', methods=['GET', 'POST'])
 @login_required
 def new():
-    return render_template("new.html")
+    if request.method == 'POST':
+        name = request.form['name']
+        sql = request.form['sql']
+        template = request.form['template']
+        cur = db.cursor()
+        cur.execute('INSERT INTO reports (editor, name, sql, template) VALUES (%s, %s, %s, %s)', [current_user.id, name, sql, template])
+        if cur.rowcount > 0:
+            flash('Successfully inserted!')
+        db.commit()
+        cur.close()
+        return redirect(url_for("index"))
+    else:
+        return render_template("new.html")
+
+@app.route('/report/<report_id>', methods=['GET', 'POST'])
+@login_required
+def report(report_id):
+    cur = db.cursor()
+    cur.execute("SELECT editor, name, sql, template FROM reports WHERE id = %s", [report_id])
+    if cur.rowcount > 0:
+        report = cur.fetchone()
+    else:
+        cur.close()
+        abort(404)
+
+    if report[0] != current_user.id:
+        cur.close()
+        abort(403)
+    cur.close()
+    if request.method == 'POST':
+        name = request.form['name']
+        sql = request.form['sql']
+        template = request.form['template']
+        cur = db.cursor()
+        cur.execute('UPDATE reports SET name = %s, sql = %s, template = %s WHERE id = %s', [name, sql, template, report_id])
+        if cur.rowcount > 0:
+            flash('Successfully updated!')
+        db.commit()
+        cur.close()
+        return redirect(url_for("index"))
+    else:
+        return render_template("report.html", report=report)
 
 # Login/logout-related views
 @app.route('/login')

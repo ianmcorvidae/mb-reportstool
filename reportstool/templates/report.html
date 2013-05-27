@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block title %}Create New Report{% endblock %}
+
+{% block content %}
+<form method="post">
+  <input type="text" name="name" style="width: 100%" value="{{ report.1 }}" />
+  <textarea data-widearea="enable" name="sql" placeholder="SQL">{{ report.2 }}</textarea>
+  <textarea data-widearea="enable" name="template" placeholder="Template">{{ report.3 }}</textarea>
+  <input type="submit" value="Edit report!" />
+</form>
+{% endblock %}
+
+{% block js %}
+<script src="/static/widearea.min.js"></script>
+<script>console.log(document.querySelectorAll('textarea[name=template]')[0].value);
+wideArea();</script>
+{% endblock %}

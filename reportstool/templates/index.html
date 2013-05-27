@@ -2,9 +2,15 @@
 {% block title %}Main{% endblock %}
 
 {% block content %}
+{% if reports is not none %}
 <ul>
-  <li>List of existing reports goes here.</li>
+  {% for id, name in reports %}
+  <li><a href="/report/{{ id }}">{{ name }}</a></li>
+  {% endfor %}
 </ul>
+{% else %}
+<p>You have no saved reports (yet!)</p>
+{% endif %}
 
 <p>
   <a href="/new">Make a new report</a>
