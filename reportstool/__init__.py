@@ -18,9 +18,15 @@ from __future__ import division, absolute_import
 from flask import Flask
 from flask.ext.login import LoginManager, UserMixin
 
+import psycopg2
+
 SECRET_KEY = 'bla'
 OAUTH_CLIENT_ID = ''
+OAUTH_CLIENT_SECRET = ''
 OAUTH_REDIRECT_URI = ''
+
+PGSQL_DB = 'reportstool'
+PGSQL_USER = 'musicbrainz'
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -57,5 +63,7 @@ def load_user(username):
     return User(username)
 
 login_manager.setup_app(app, add_context_processor=True)
+
+db = psycopg2.connect('dbname=' + app.config['PGSQL_DB'] + ' user=' + app.config['PGSQL_USER'])
 
 import reportstool.views

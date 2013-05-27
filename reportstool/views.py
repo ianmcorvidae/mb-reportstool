@@ -17,11 +17,14 @@
 from __future__ import division, absolute_import
 from flask import render_template, request, redirect, url_for, flash, Response, g
 from flask.ext.login import login_required, login_user, logout_user, current_user
-from reportstool import app, login_manager, User
+from reportstool import app, login_manager, User, db
 
 import urllib
 import urllib2
 import json
+import os
+import base64
+import psycopg2
 
 @app.route('/')
 @login_required
@@ -31,13 +34,43 @@ def index():
 # Login/logout-related views
 @app.route('/login')
 def login():
-    return render_template("login.html", client_id=app.config['OAUTH_CLIENT_ID'], redirect_uri=app.config['OAUTH_REDIRECT_URI'], csrf='')
+    try:
+        ip = request.environ['HTTP_X_FORWARDED_FOR'].split(',')[-1].strip()
+    except KeyError:
+        ip = request.environ['REMOTE_ADDR']
+    rand = base64.urlsafe_b64encode(os.urandom(30))
+
+    cur = db.cursor()
+    cur.execute("INSERT INTO csrf (csrf, ip) VALUES (%(csrf)s, %(ip)s)", {'csrf': rand, 'ip': ip})
+    db.commit()
+    cur.close()
+
+    return render_template("login.html", client_id=app.config['OAUTH_CLIENT_ID'], redirect_uri=app.config['OAUTH_REDIRECT_URI'], csrf=rand)
 
 @app.route('/internal/oauth')
 def oauth_callback():
     error = request.args.get('error')
     if not error:
-        state = request.args.getlist('state')
+        try:
+            ip = request.environ['HTTP_X_FORWARDED_FOR'].split(',')[-1].strip()
+        except KeyError:
+            ip = request.environ['REMOTE_ADDR']
+        csrf = request.args.get('state')
+        cur = db.cursor()
+        cur.execute('SELECT ip from csrf WHERE csrf = %s', [csrf])
+        try:
+            row = cur.fetchone()
+            if row[0] != ip:
+                raise psycopg2.ProgrammingError()
+            else:
+                cur.execute('DELETE FROM csrf WHERE csrf = %s', [csrf])
+                db.commit()
+        except psycopg2.ProgrammingError:
+            flash('csrf failure')
+            return render_template("login.html", client_id=app.config['OAUTH_CLIENT_ID'], redirect_uri=app.config['OAUTH_REDIRECT_URI'], csrf='')
+        finally:
+            cur.close()
+
         code = request.args.get('code')
         username = check_mb_account(code)
         if username:
@@ -45,7 +78,7 @@ def oauth_callback():
             flash("Logged in!")
             return redirect(request.args.get("next") or url_for("index"))
         else:
-            flash('Incorrect username, please try again.')
+            flash('Could not find username, please try again.')
     else:
         flash('There was an error: ' + error)
     return render_template("login.html", client_id=app.config['OAUTH_CLIENT_ID'], redirect_uri=app.config['OAUTH_REDIRECT_URI'], csrf='')
