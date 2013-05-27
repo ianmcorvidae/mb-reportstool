@@ -9,7 +9,11 @@
     <body>
         <div class="container">
           <div class="content">
-            <div style="float:right">{% block header %}{% endblock %}</div>
+            <div style="float:right">
+              {% if current_user.is_authenticated() %}
+                <a href="https://musicbrainz.org/user/{{current_user.id}}">{{ current_user.id }}</a> <a href="/logout">(log out)</a>
+              {% endif %}
+            </div>
             {% with messages = get_flashed_messages() %}
               {% if messages %}
                 <ul class="flashes">

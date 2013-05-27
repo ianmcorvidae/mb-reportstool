@@ -19,7 +19,20 @@ from flask import render_template, request, redirect, url_for, flash, Response, 
 from flask.ext.login import login_required, login_user, logout_user, current_user
 from reportstool import app, login_manager, User
 
+@app.route('/')
+@login_required
+def index():
+    return render_template("index.html")
+
 # Login/logout-related views
 @app.route('/login')
 def login():
     return render_template("login.html", client_id=app.config['OAUTH_CLIENT_ID'], redirect_uri=app.config['OAUTH_REDIRECT_URI'], csrf='')
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    flash("Logged out.")
+    return redirect(url_for("index"))
+
