@@ -31,6 +31,11 @@ import psycopg2
 def index():
     return render_template("index.html")
 
+@app.route('/new')
+@login_required
+def new():
+    return render_template("new.html")
+
 # Login/logout-related views
 @app.route('/login')
 def login():

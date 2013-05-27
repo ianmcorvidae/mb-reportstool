@@ -4,6 +4,7 @@
        {% block head %}
            <title>{% block title %}{% endblock %} - reports tool</title>
            <link rel="stylesheet" href="/static/styles/main.css">
+           <link rel="stylesheet" href="/static/styles/widearea.min.css">
        {% endblock %}
     </head>
     <body>
@@ -23,7 +24,7 @@
                 </ul>
               {% endif %}
             {% endwith %}
-            <h1><a class="head_title" href="/">Reports Tool</a></h1>
+            <h1><a class="head_title" href="/">MusicBrainz Sandbox Reports Tool</a></h1>
             {% block content %}{% endblock %}
           </div>
     </div>

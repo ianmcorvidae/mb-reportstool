@@ -19,6 +19,11 @@ hr {
     padding: 1px;
 }
 
+textarea {
+    width: 100%;
+    height: 200px;
+}
+
 table {
     border-collapse: collapse;
     width: 100%;
