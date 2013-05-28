@@ -82,23 +82,7 @@ def new():
 @app.route('/report/<reportid>', methods=['GET', 'POST'])
 @login_required
 def report(reportid):
-    db = get_db()
-    cur = db.cursor()
-    cur.execute("SELECT editor, name, sql, template FROM reports WHERE id = %s", [reportid])
-    if cur.rowcount > 0:
-        report = cur.fetchone()
-    else:
-        cur.close()
-        db.close()
-        abort(404)
-
-    if report[0] != current_user.id:
-        cur.close()
-        db.close()
-        abort(403)
-    cur.close()
-    db.close()
-
+    report = getreport(reportid)
     if request.method == 'POST':
         name = request.form['name']
         sql = request.form['sql']
@@ -130,22 +114,11 @@ def report(reportid):
 @app.route('/report/<reportid>/delete', methods=['GET', 'POST'])
 @login_required
 def report_delete(reportid):
-    db = get_db()
-    cur = db.cursor()
-    cur.execute("SELECT editor, name, sql, template FROM reports WHERE id = %s", [reportid])
-    if cur.rowcount > 0:
-        report = cur.fetchone()
-    else:
-        cur.close()
-        db.close()
-        abort(404)
-
-    if report[0] != current_user.id:
-        cur.close()
-        db.close()
-        abort(403)
+    report = getreport(reportid)
 
     if request.method == 'POST' and request.form['confirm'] == 'on':
+        db = get_db()
+        cur = db.cursor()
         cur.execute('DELETE FROM reports WHERE id = %s', [reportid])
         if cur.rowcount > 0:
             flash('Successfully deleted!')
@@ -154,13 +127,27 @@ def report_delete(reportid):
         db.close()
         return redirect(url_for("dashboard"))
     else:
-        cur.close()
-        db.close()
         return render_template("delete.html")
 
 @app.route('/report/<reportid>/preview')
 @login_required
 def report_preview(reportid):
+    report = getreport(reportid)
+    mbdb = get_mbdb()
+    mbcur = mbdb.cursor()
+    try:
+        mbcur.execute(report[2])
+        vals = [runtemplate(report[3], row) for row in mbcur.fetchall()]
+        error = None
+    except psycopg2.ProgrammingError, e:
+        vals = None
+        error = e
+    finally:
+        mbcur.close()
+        mbdb.close()
+    return render_template("reportpreview.html", report=report, extracted=vals, error=error, reportid=reportid)
+
+def getreport(reportid):
     db = get_db()
     cur = db.cursor()
     cur.execute("SELECT editor, name, sql, template FROM reports WHERE id = %s", [reportid])
@@ -177,19 +164,7 @@ def report_preview(reportid):
         abort(403)
     cur.close()
     db.close()
-    mbdb = get_mbdb()
-    mbcur = mbdb.cursor()
-    try:
-        mbcur.execute(report[2])
-        vals = [runtemplate(report[3], row) for row in mbcur.fetchall()]
-        error = None
-    except psycopg2.ProgrammingError, e:
-        vals = None
-        error = e
-    finally:
-        mbcur.close()
-        mbdb.close()
-    return render_template("reportpreview.html", report=report, extracted=vals, error=error, reportid=reportid)
+    return report
 
 def runtemplate(template, row):
     try:
