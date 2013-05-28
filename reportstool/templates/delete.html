@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block title %}Delete Report{% endblock %}
+
+{% block content %}
+<form method="post">
+  <label for="id-confirm">Are you sure you want to delete this report?</label>
+  <input type="checkbox" name="confirm" id="id-confirm" />
+  <input type="submit" value="Go!" />
+</form>
+{% endblock %}

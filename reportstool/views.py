@@ -29,7 +29,16 @@ import jinja2
 
 @app.route('/')
 def index():
-    return render_template("index.html")
+    db = get_db()
+    cur = db.cursor()
+    cur.execute("SELECT editor, id, name FROM reports ORDER BY editor, id")
+    if cur.rowcount > 0:
+        reports = cur.fetchall()
+    else:
+        reports = None
+    cur.close()
+    db.close()
+    return render_template("index.html", reports=reports)
 
 @app.route('/dashboard')
 @login_required
@@ -116,7 +125,38 @@ def report(reportid):
         finally:
             mbcur.close()
             mbdb.close()
-        return render_template("report.html", report=report, extracted=vals, error=error)
+        return render_template("report.html", report=report, extracted=vals, error=error, reportid=reportid)
+
+@app.route('/report/<reportid>/delete', methods=['GET', 'POST'])
+@login_required
+def report_delete(reportid):
+    db = get_db()
+    cur = db.cursor()
+    cur.execute("SELECT editor, name, sql, template FROM reports WHERE id = %s", [reportid])
+    if cur.rowcount > 0:
+        report = cur.fetchone()
+    else:
+        cur.close()
+        db.close()
+        abort(404)
+
+    if report[0] != current_user.id:
+        cur.close()
+        db.close()
+        abort(403)
+
+    if request.method == 'POST' and request.form['confirm'] == 'on':
+        cur.execute('DELETE FROM reports WHERE id = %s', [reportid])
+        if cur.rowcount > 0:
+            flash('Successfully deleted!')
+        db.commit()
+        cur.close()
+        db.close()
+        return redirect(url_for("dashboard"))
+    else:
+        cur.close()
+        db.close()
+        return render_template("delete.html")
 
 @app.route('/report/<reportid>/preview')
 @login_required
@@ -149,7 +189,7 @@ def report_preview(reportid):
     finally:
         mbcur.close()
         mbdb.close()
-    return render_template("reportpreview.html", report=report, extracted=vals, error=error)
+    return render_template("reportpreview.html", report=report, extracted=vals, error=error, reportid=reportid)
 
 def runtemplate(template, row):
     try:

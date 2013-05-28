@@ -2,5 +2,16 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<p>Welcome to the MusicBrainz Sandbox Reports tool! Please <a href="{{ url_for('login') }}">log in with your musicbrainz account</a> to make reports.</p>
+{% if current_user %}
+  <p>Hello! There's not much to see here, you may prefer to look at <a href="{{ url_for('dashboard') }}">your dashboard</a> instead.</p>
+{% else %}
+  <p>Welcome to the MusicBrainz Sandbox Reports tool! Please <a href="{{ url_for('login') }}">log in with your musicbrainz account</a> to make reports.</p>
+{% endif %}
+
+<h2>Reports</h2>
+<ul>
+  {% for report in reports %}
+    <li>{{ report[2] }} by {{ report[0] }}</li>
+  {% endfor %}
+</ul>
 {% endblock %}
