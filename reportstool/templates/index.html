@@ -5,7 +5,16 @@
 {% if current_user.is_authenticated() %}
   <p>Hello! There's not much to see here, you may prefer to look at <a href="{{ url_for('dashboard') }}">your dashboard</a> instead.</p>
 {% else %}
-  <p>Welcome to the MusicBrainz Sandbox Reports tool! Please <a href="{{ url_for('login') }}">log in with your musicbrainz account</a> to make reports.</p>
+  <p>Welcome to the MusicBrainz Sandbox Reports tool! Please log in with your MusicBrainz account to make reports.</p>
+
+  <form action="https://musicbrainz.org/oauth2/authorize" method="get">
+    <input type="hidden" name="response_type" value="code" />
+    <input type="hidden" name="client_id" value="{{ client_id }}" />
+    <input type="hidden" name="redirect_uri" value="{{ redirect_uri }}" />
+    <input type="hidden" name="scope" value="profile" />
+    <input type="hidden" name="state" value="{{ csrf }}" />
+    <input type="submit" value="Log in!" />
+  </form>
 {% endif %}
 
 <h2>Reports</h2>

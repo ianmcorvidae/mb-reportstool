@@ -39,7 +39,23 @@ def index():
         reports = None
     cur.close()
     db.close()
-    return render_template("index.html", reports=reports)
+    if current_user.is_authenticated():
+        return render_template("index.html", reports=reports)
+    else:
+        try:
+            ip = request.environ['HTTP_X_FORWARDED_FOR'].split(',')[-1].strip()
+        except KeyError:
+            ip = request.environ['REMOTE_ADDR']
+        rand = base64.urlsafe_b64encode(os.urandom(30))
+
+        db = get_db()
+        cur = db.cursor()
+        cur.execute("INSERT INTO csrf (csrf, ip) VALUES (%(csrf)s, %(ip)s)", {'csrf': rand, 'ip': ip})
+        db.commit()
+        cur.close()
+        db.close()
+
+        return render_template("index.html", client_id=app.config['OAUTH_CLIENT_ID'], redirect_uri=app.config['OAUTH_REDIRECT_URI'], csrf=rand, reports=reports)
 
 @app.route('/dashboard')
 @login_required

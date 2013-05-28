@@ -6,7 +6,7 @@
 {% if reports is not none %}
 <ul>
   {% for id, name in reports %}
-  <li><a href="/report/{{ id }}">{{ name }}</a></li>
+  <li><a href="/report/{{ id }}">{{ id }}: {{ name }}</a></li>
   {% endfor %}
 </ul>
 {% else %}
