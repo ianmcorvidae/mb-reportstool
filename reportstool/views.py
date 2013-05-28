@@ -143,10 +143,9 @@ def report_delete(reportid):
     else:
         return render_template("delete.html")
 
-@app.route('/report/<reportid>/preview')
-@login_required
-def report_preview(reportid):
-    report = getreport(reportid)
+@app.route('/report/<reportid>/view')
+def report_view(reportid):
+    report = getreport(reportid, False)
     mbdb = get_mbdb()
     mbcur = mbdb.cursor()
     try:
@@ -159,9 +158,9 @@ def report_preview(reportid):
     finally:
         mbcur.close()
         mbdb.close()
-    return render_template("reportpreview.html", report=report, extracted=vals, error=error, reportid=reportid)
+    return render_template("reportview.html", report=report, extracted=vals, error=error, reportid=reportid)
 
-def getreport(reportid):
+def getreport(reportid, requireuser=True):
     db = get_db()
     cur = db.cursor()
     cur.execute("SELECT editor, name, sql, template, template_headers FROM reports WHERE id = %s", [reportid])
@@ -172,7 +171,7 @@ def getreport(reportid):
         db.close()
         abort(404)
 
-    if report[0] != current_user.id:
+    if requireuser and report[0] != current_user.id:
         cur.close()
         db.close()
         abort(403)

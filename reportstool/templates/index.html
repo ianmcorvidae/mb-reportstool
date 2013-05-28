@@ -2,7 +2,7 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-{% if current_user %}
+{% if current_user.is_authenticated() %}
   <p>Hello! There's not much to see here, you may prefer to look at <a href="{{ url_for('dashboard') }}">your dashboard</a> instead.</p>
 {% else %}
   <p>Welcome to the MusicBrainz Sandbox Reports tool! Please <a href="{{ url_for('login') }}">log in with your musicbrainz account</a> to make reports.</p>
@@ -11,7 +11,7 @@
 <h2>Reports</h2>
 <ul>
   {% for report in reports %}
-    <li>{{ report[2] }} by {{ report[0] }}</li>
+  <li><a href="{{ url_for('report_view', reportid=report[1]) }}">{{ report[2] }} by {{ report[0] }}</a></li>
   {% endfor %}
 </ul>
 {% endblock %}
