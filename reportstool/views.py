@@ -83,9 +83,8 @@ def new():
         return render_template("new.html")
 
 @app.route('/report/<reportid>')
-@login_required
 def report(reportid):
-    report = getreport(reportid)
+    report = getreport(reportid, False)
     return render_template("report.html", report=report, reportid=reportid)
 
 @app.route('/report/<reportid>/edit', methods=['GET', 'POST'])

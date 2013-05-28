@@ -6,7 +6,11 @@
 <p>SQL: <code>{{ report[2] }}</code></p>
 <p>Header: <code>{{ report[4] }}</code></p>
 <p>Template: <code>{{ report[3] }}</code></p>
+{% if current_user.is_authenticated() and current_user.id == report[0] %}
 <p><a href="{{ url_for('report_edit', reportid=reportid) }}">Edit this report</a> |
    <a href="{{ url_for('report_view', reportid=reportid) }}">View this report</a> |
    <a href="{{ url_for('report_delete', reportid=reportid) }}">Delete this report</a></p>
+{% else %}
+<p><a href="{{ url_for('report_view', reportid=reportid) }}">View this report</a></p>
+{% endif %}
 {% endblock %}
