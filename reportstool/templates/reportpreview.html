@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block title %}Preview Report{% endblock %}
+
+{% block content %}
+<h2>Preview report: {{ report[1] }}</h2>
+{% if extracted %}
+  <table class="zebra">
+    {% for line in extracted %}
+      <tr>{{ line | safe }}</tr>
+    {% endfor %}
+  </table>
+{% else %}
+  <p>
+    <strong>Query failed: <span style="color: red">{{ error }}</span></strong>
+  </p>
+{% endif %}
+{% endblock %}

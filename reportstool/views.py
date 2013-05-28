@@ -17,7 +17,7 @@
 from __future__ import division, absolute_import
 from flask import render_template, request, redirect, url_for, flash, Response, g, abort
 from flask.ext.login import login_required, login_user, logout_user, current_user
-from reportstool import app, login_manager, User, db
+from reportstool import app, login_manager, User, get_db, get_mbdb
 
 import urllib
 import urllib2
@@ -25,10 +25,12 @@ import json
 import os
 import base64
 import psycopg2
+import jinja2
 
 @app.route('/')
 @login_required
 def index():
+    db = get_db()
     cur = db.cursor()
     cur.execute("SELECT id, name FROM reports WHERE editor = %s", [current_user.id])
     if cur.rowcount > 0:
@@ -36,6 +38,7 @@ def index():
     else:
         reports = None
     cur.close()
+    db.close()
 
     return render_template("index.html", reports=reports)
 
@@ -46,44 +49,110 @@ def new():
         name = request.form['name']
         sql = request.form['sql']
         template = request.form['template']
+        db = get_db()
         cur = db.cursor()
-        cur.execute('INSERT INTO reports (editor, name, sql, template) VALUES (%s, %s, %s, %s)', [current_user.id, name, sql, template])
+        cur.execute('INSERT INTO reports (editor, name, sql, template) VALUES (%s, %s, %s, %s) RETURNING id', [current_user.id, name, sql, template])
         if cur.rowcount > 0:
             flash('Successfully inserted!')
+            newid = cur.fetchone()[0]
+        else: newid = None
         db.commit()
         cur.close()
-        return redirect(url_for("index"))
+        db.close()
+        if newid:
+            return redirect(url_for("report", reportid=newid))
+        else:
+            return redirect(url_for('index'))
     else:
         return render_template("new.html")
 
-@app.route('/report/<report_id>', methods=['GET', 'POST'])
+@app.route('/report/<reportid>', methods=['GET', 'POST'])
 @login_required
-def report(report_id):
+def report(reportid):
+    db = get_db()
     cur = db.cursor()
-    cur.execute("SELECT editor, name, sql, template FROM reports WHERE id = %s", [report_id])
+    cur.execute("SELECT editor, name, sql, template FROM reports WHERE id = %s", [reportid])
     if cur.rowcount > 0:
         report = cur.fetchone()
     else:
         cur.close()
+        db.close()
         abort(404)
 
     if report[0] != current_user.id:
         cur.close()
+        db.close()
         abort(403)
     cur.close()
+    db.close()
+
     if request.method == 'POST':
         name = request.form['name']
         sql = request.form['sql']
         template = request.form['template']
+        db = get_db()
         cur = db.cursor()
-        cur.execute('UPDATE reports SET name = %s, sql = %s, template = %s WHERE id = %s', [name, sql, template, report_id])
+        cur.execute('UPDATE reports SET name = %s, sql = %s, template = %s WHERE id = %s', [name, sql, template, reportid])
         if cur.rowcount > 0:
             flash('Successfully updated!')
         db.commit()
         cur.close()
-        return redirect(url_for("index"))
+        db.close()
+        return redirect(url_for("report", reportid=reportid))
     else:
-        return render_template("report.html", report=report)
+        mbdb = get_mbdb()
+        mbcur = mbdb.cursor()
+        try:
+            mbcur.execute('EXPLAIN ' + report[2])
+            vals = mbcur.fetchall()
+            error = None
+        except psycopg2.ProgrammingError, e:
+            vals = None
+            error = e
+        finally:
+            mbcur.close()
+            mbdb.close()
+        return render_template("report.html", report=report, extracted=vals, error=error)
+
+@app.route('/report/<reportid>/preview')
+@login_required
+def report_preview(reportid):
+    db = get_db()
+    cur = db.cursor()
+    cur.execute("SELECT editor, name, sql, template FROM reports WHERE id = %s", [reportid])
+    if cur.rowcount > 0:
+        report = cur.fetchone()
+    else:
+        cur.close()
+        db.close()
+        abort(404)
+
+    if report[0] != current_user.id:
+        cur.close()
+        db.close()
+        abort(403)
+    cur.close()
+    db.close()
+    mbdb = get_mbdb()
+    mbcur = mbdb.cursor()
+    try:
+        mbcur.execute(report[2])
+        vals = [runtemplate(report[3], row) for row in mbcur.fetchall()]
+        error = None
+    except psycopg2.ProgrammingError, e:
+        vals = None
+        error = e
+    finally:
+        mbcur.close()
+        mbdb.close()
+    return render_template("reportpreview.html", report=report, extracted=vals, error=error)
+
+def runtemplate(template, row):
+    try:
+        renderer=jinja2.Template(template)
+        return renderer.render(row=[entry.decode('utf-8') for entry in row])
+    except Exception, e:
+        return e
 
 # Login/logout-related views
 @app.route('/login')
@@ -94,10 +163,12 @@ def login():
         ip = request.environ['REMOTE_ADDR']
     rand = base64.urlsafe_b64encode(os.urandom(30))
 
+    db = get_db()
     cur = db.cursor()
     cur.execute("INSERT INTO csrf (csrf, ip) VALUES (%(csrf)s, %(ip)s)", {'csrf': rand, 'ip': ip})
     db.commit()
     cur.close()
+    db.close()
 
     return render_template("login.html", client_id=app.config['OAUTH_CLIENT_ID'], redirect_uri=app.config['OAUTH_REDIRECT_URI'], csrf=rand)
 
@@ -110,6 +181,7 @@ def oauth_callback():
         except KeyError:
             ip = request.environ['REMOTE_ADDR']
         csrf = request.args.get('state')
+        db = get_db()
         cur = db.cursor()
         cur.execute('SELECT ip from csrf WHERE csrf = %s', [csrf])
         try:
@@ -124,6 +196,7 @@ def oauth_callback():
             return render_template("login.html", client_id=app.config['OAUTH_CLIENT_ID'], redirect_uri=app.config['OAUTH_REDIRECT_URI'], csrf='')
         finally:
             cur.close()
+            db.close()
 
         code = request.args.get('code')
         username = check_mb_account(code)

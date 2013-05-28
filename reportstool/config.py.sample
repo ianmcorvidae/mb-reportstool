@@ -5,4 +5,5 @@ OAUTH_REDIRECT_URI = ''
 
 PGSQL_DB = 'reportstool'
 PGSQL_USER = 'musicbrainz'
+PGSQL_MB_DB = 'musicbrainz_db'
 
