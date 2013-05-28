@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<p>Welcome, {{ current_user.id }}!</p>
+{% if reports is not none %}
+<ul>
+  {% for id, name in reports %}
+  <li><a href="/report/{{ id }}">{{ name }}</a></li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>You have no saved reports (yet!)</p>
+{% endif %}
+
+<p>
+  <a href="/new">Make a new report</a>
+</p>
+{% endblock %}

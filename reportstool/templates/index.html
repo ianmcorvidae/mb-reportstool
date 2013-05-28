@@ -1,18 +1,6 @@
 {% extends "layout.html" %}
-{% block title %}Main{% endblock %}
+{% block title %}Home{% endblock %}
 
 {% block content %}
-{% if reports is not none %}
-<ul>
-  {% for id, name in reports %}
-  <li><a href="/report/{{ id }}">{{ name }}</a></li>
-  {% endfor %}
-</ul>
-{% else %}
-<p>You have no saved reports (yet!)</p>
-{% endif %}
-
-<p>
-  <a href="/new">Make a new report</a>
-</p>
+<p>Welcome to the MusicBrainz Sandbox Reports tool! Please <a href="{{ url_for('login') }}">log in with your musicbrainz account</a> to make reports.</p>
 {% endblock %}

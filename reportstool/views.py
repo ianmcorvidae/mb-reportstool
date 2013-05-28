@@ -28,8 +28,12 @@ import psycopg2
 import jinja2
 
 @app.route('/')
-@login_required
 def index():
+    return render_template("index.html")
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
     db = get_db()
     cur = db.cursor()
     cur.execute("SELECT id, name FROM reports WHERE editor = %s", [current_user.id])
@@ -40,7 +44,7 @@ def index():
     cur.close()
     db.close()
 
-    return render_template("index.html", reports=reports)
+    return render_template("dashboard.html", reports=reports)
 
 @app.route('/new', methods=['GET', 'POST'])
 @login_required
@@ -62,7 +66,7 @@ def new():
         if newid:
             return redirect(url_for("report", reportid=newid))
         else:
-            return redirect(url_for('index'))
+            return redirect(url_for('dashboard'))
     else:
         return render_template("new.html")
 
@@ -203,7 +207,7 @@ def oauth_callback():
         if username:
             login_user(User(username))
             flash("Logged in!")
-            return redirect(request.args.get("next") or url_for("index"))
+            return redirect(request.args.get("next") or url_for("dashboard"))
         else:
             flash('Could not find username, please try again.')
     else:
