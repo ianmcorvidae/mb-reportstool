@@ -4,6 +4,7 @@
 {% block content %}
 <h2>Report "{{ report[1] }}"</h2>
 <p>SQL: <code>{{ report[2] }}</code></p>
+<p>Header: <code>{{ report[4] }}</code></p>
 <p>Template: <code>{{ report[3] }}</code></p>
 <p><a href="{{ url_for('report_edit', reportid=reportid) }}">Edit this report</a> |
    <a href="{{ url_for('report_preview', reportid=reportid) }}">Preview this report</a> |

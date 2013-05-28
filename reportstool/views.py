@@ -62,9 +62,10 @@ def new():
         name = request.form['name']
         sql = request.form['sql']
         template = request.form['template']
+        template_headers = request.form['template_headers']
         db = get_db()
         cur = db.cursor()
-        cur.execute('INSERT INTO reports (editor, name, sql, template) VALUES (%s, %s, %s, %s) RETURNING id', [current_user.id, name, sql, template])
+        cur.execute('INSERT INTO reports (editor, name, sql, template, template_headers) VALUES (%s, %s, %s, %s, %s) RETURNING id', [current_user.id, name, sql, template, template_headers])
         if cur.rowcount > 0:
             flash('Successfully inserted!')
             newid = cur.fetchone()[0]
@@ -95,9 +96,10 @@ def report_edit(reportid):
         name = request.form['name']
         sql = request.form['sql']
         template = request.form['template']
+        template_headers = request.form['template_headers']
         db = get_db()
         cur = db.cursor()
-        cur.execute('UPDATE reports SET name = %s, sql = %s, template = %s WHERE id = %s', [name, sql, template, reportid])
+        cur.execute('UPDATE reports SET name = %s, sql = %s, template = %s, template_headers = %s WHERE id = %s', [name, sql, template, template_headers, reportid])
         if cur.rowcount > 0:
             flash('Successfully updated!')
         else:
@@ -162,7 +164,7 @@ def report_preview(reportid):
 def getreport(reportid):
     db = get_db()
     cur = db.cursor()
-    cur.execute("SELECT editor, name, sql, template FROM reports WHERE id = %s", [reportid])
+    cur.execute("SELECT editor, name, sql, template, template_headers FROM reports WHERE id = %s", [reportid])
     if cur.rowcount > 0:
         report = cur.fetchone()
     else:

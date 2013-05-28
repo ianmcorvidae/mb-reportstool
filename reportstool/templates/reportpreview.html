@@ -5,9 +5,12 @@
 <h2>Preview report: <a href="{{ url_for('report', reportid=reportid) }}">{{ report[1] }}</a></h2>
 {% if extracted %}
   <table class="zebra">
+    <thead><tr>{{ report[4] | safe }}</tr></thead>
+    <tbody>
     {% for line in extracted %}
       <tr>{{ line | safe }}</tr>
     {% endfor %}
+    </tbody>
   </table>
 {% else %}
   <p>

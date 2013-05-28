@@ -6,6 +6,7 @@
 <form method="post">
   <input type="text" name="name" style="width: 100%" value="{{ report.1 }}" />
   <textarea data-widearea="enable" name="sql" placeholder="SQL">{{ report.2 }}</textarea>
+  <input type="text" name="template_headers" style="width: 100%" placeholder"Table header" value="{{ report.4 }}" />
   <textarea data-widearea="enable" name="template" placeholder="Template">{{ report.3 }}</textarea>
   <input type="submit" value="Edit report!" />
 </form>
