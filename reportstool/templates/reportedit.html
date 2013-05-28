@@ -11,6 +11,17 @@
   <input type="submit" value="Edit report!" />
 </form>
 
+
+<h2>Tips and Tricks</h2>
+<ul>
+  <li>The 'SQL' bit is what will be run against the DB.</li>
+  <li>The 'Table Row Template' is how the results from the DB will be formatted; it's a <a href="http://jinja.pocoo.org/docs/templates/">jinja2</a> template for a single row of the results table. The result row that's being formatted will be in the 'row' variable, which is a tuple. So, the first column you SELECT from the database will be 'row.0', the next 'row.1', etc.</li>
+  <li>The 'Table Header' is the header of the table. Put in a few &lt;th&gt; to label your columns.</li>
+  <li>The 'Report name' is exactly what it sounds like!</li>
+  <li>Unless the result set is really big, your report should be cached for an hour. You can tell, on the view page, by looking at the "Rendered" time.</li>
+  <li>The 'Query plan', below, is there so you can see an estimate of how big/expensive your query will be to perform, and if it'll actually be able to run. Be cautious of recursive queries, of course, because a query plan can't detect if a recursive query will run forever.</li>
+</ul>
+
 <h2>Query plan</h2>
 {% if extracted %}
   <p>
