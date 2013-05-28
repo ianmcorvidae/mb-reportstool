@@ -206,7 +206,7 @@ def getreport(reportid, requireuser=True):
         abort(403)
     cur.close()
     db.close()
-    return report
+    return [process_entry(entry) for entry in report]
 
 def runtemplate(template, row):
     try:
