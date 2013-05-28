@@ -81,9 +81,15 @@ def new():
     else:
         return render_template("new.html")
 
-@app.route('/report/<reportid>', methods=['GET', 'POST'])
+@app.route('/report/<reportid>')
 @login_required
 def report(reportid):
+    report = getreport(reportid)
+    return render_template("report.html", report=report, reportid=reportid)
+
+@app.route('/report/<reportid>/edit', methods=['GET', 'POST'])
+@login_required
+def report_edit(reportid):
     report = getreport(reportid)
     if request.method == 'POST':
         name = request.form['name']
@@ -113,7 +119,7 @@ def report(reportid):
         finally:
             mbcur.close()
             mbdb.close()
-        return render_template("report.html", report=report, extracted=vals, error=error, reportid=reportid)
+        return render_template("reportedit.html", report=report, extracted=vals, error=error, reportid=reportid)
 
 @app.route('/report/<reportid>/delete', methods=['GET', 'POST'])
 @login_required

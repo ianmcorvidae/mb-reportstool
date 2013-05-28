@@ -2,31 +2,10 @@
 {% block title %}Edit Report{% endblock %}
 
 {% block content %}
-<form method="post">
-  <input type="text" name="name" style="width: 100%" value="{{ report.1 }}" />
-  <textarea data-widearea="enable" name="sql" placeholder="SQL">{{ report.2 }}</textarea>
-  <textarea data-widearea="enable" name="template" placeholder="Template">{{ report.3 }}</textarea>
-  <input type="submit" value="Edit report!" />
-</form>
-
-<h2>Query plan</h2>
-{% if extracted %}
-  <p>
-    {% for line in extracted %}
-      {{ line[0] | replace(' ', ' ') }}<br />
-    {% endfor %}
-  </p>
-{% else %}
-  <p>
-    <strong>Query failed: <span style="color: red">{{ error }}</span></strong>
-  </p>
-{% endif %}
-
-<p><a href="{{ url_for('report_preview', reportid=reportid) }}">Preview this report</a> |
+<h2>Report "{{ report[1] }}"</h2>
+<p>SQL: <code>{{ report[2] }}</code></p>
+<p>Template: <code>{{ report[3] }}</code></p>
+<p><a href="{{ url_for('report_edit', reportid=reportid) }}">Edit this report</a> |
+   <a href="{{ url_for('report_preview', reportid=reportid) }}">Preview this report</a> |
    <a href="{{ url_for('report_delete', reportid=reportid) }}">Delete this report</a></p>
-{% endblock %}
-
-{% block js %}
-<script src="/static/widearea.min.js"></script>
-<script>wideArea();</script>
 {% endblock %}
