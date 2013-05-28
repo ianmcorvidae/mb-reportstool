@@ -162,7 +162,9 @@ def report_view(reportid):
             mbcur.execute(report[2])
             vals = [runtemplate(report[3], row) for row in mbcur.fetchall()]
             rtime = datetime.datetime.utcnow()
-            cache.set_multi({str(reportid): {'time': rtime, 'vals': vals}}, time=60*60, key_prefix='reportstool:')
+            try:
+                cache.set_multi({str(reportid): {'time': rtime, 'vals': vals}}, time=60*60, key_prefix='reportstool:')
+            except: pass # hack since things >1mb fail on rika
         except psycopg2.ProgrammingError, e:
             vals = None
             error = e
