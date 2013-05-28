@@ -9,6 +9,7 @@
      {{ report[1] }} by <a href="https://musicbrainz.org/user/{{report[0]}}">{{ report[0] }}</a>
    {% endif %}
 </h2>
+{% if time %}<p>Rendered: {{time}}</p>{% endif %}
 {% if extracted %}
   <table class="zebra">
     <thead><tr>{{ report[4] | safe }}</tr></thead>

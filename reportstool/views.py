@@ -17,7 +17,7 @@
 from __future__ import division, absolute_import
 from flask import render_template, request, redirect, url_for, flash, Response, g, abort
 from flask.ext.login import login_required, login_user, logout_user, current_user
-from reportstool import app, login_manager, User, get_db, get_mbdb
+from reportstool import app, login_manager, User, get_db, get_mbdb, cache
 
 import urllib
 import urllib2
@@ -26,6 +26,7 @@ import os
 import base64
 import psycopg2
 import jinja2
+import datetime
 
 @app.route('/')
 def index():
@@ -96,16 +97,20 @@ def report_edit(reportid):
         sql = request.form['sql']
         template = request.form['template']
         template_headers = request.form['template_headers']
-        db = get_db()
-        cur = db.cursor()
-        cur.execute('UPDATE reports SET name = %s, sql = %s, template = %s, template_headers = %s WHERE id = %s', [name, sql, template, template_headers, reportid])
-        if cur.rowcount > 0:
-            flash('Successfully updated!')
+        if (name != report[1] or sql != report[2] or template != report[3] or template_headers != report[4]):
+            db = get_db()
+            cur = db.cursor()
+            cur.execute('UPDATE reports SET name = %s, sql = %s, template = %s, template_headers = %s WHERE id = %s', [name, sql, template, template_headers, reportid])
+            if cur.rowcount > 0:
+                flash('Successfully updated!')
+            else:
+                flash('Something went wrong.')
+            db.commit()
+            cur.close()
+            db.close()
+            cache.delete_multi([reportid], key_prefix='reportstool:')
         else:
-            flash('Something went wrong.')
-        db.commit()
-        cur.close()
-        db.close()
+            flash('No changes.')
         return redirect(url_for("report", reportid=reportid))
     else:
         mbdb = get_mbdb()
@@ -145,19 +150,26 @@ def report_delete(reportid):
 @app.route('/report/<reportid>/view')
 def report_view(reportid):
     report = getreport(reportid, False)
-    mbdb = get_mbdb()
-    mbcur = mbdb.cursor()
-    try:
-        mbcur.execute(report[2])
-        vals = [runtemplate(report[3], row) for row in mbcur.fetchall()]
-        error = None
-    except psycopg2.ProgrammingError, e:
-        vals = None
-        error = e
-    finally:
-        mbcur.close()
-        mbdb.close()
-    return render_template("reportview.html", report=report, extracted=vals, error=error, reportid=reportid)
+    error = None
+    prerendered = cache.get_multi([reportid], key_prefix='reportstool:')
+    if prerendered.get(str(reportid), False):
+        vals = prerendered.get(str(reportid))['vals']
+        rtime = prerendered.get(str(reportid))['time']
+    else:
+        mbdb = get_mbdb()
+        mbcur = mbdb.cursor()
+        try:
+            mbcur.execute(report[2])
+            vals = [runtemplate(report[3], row) for row in mbcur.fetchall()]
+            rtime = datetime.datetime.utcnow()
+            cache.set_multi({str(reportid): {'time': rtime, 'vals': vals}}, time=60*60, key_prefix='reportstool:')
+        except psycopg2.ProgrammingError, e:
+            vals = None
+            error = e
+        finally:
+            mbcur.close()
+            mbdb.close()
+    return render_template("reportview.html", report=report, extracted=vals, error=error, reportid=reportid, time=rtime)
 
 def getreport(reportid, requireuser=True):
     db = get_db()

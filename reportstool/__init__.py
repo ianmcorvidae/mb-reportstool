@@ -19,6 +19,7 @@ from flask import Flask
 from flask.ext.login import LoginManager, UserMixin
 
 import psycopg2
+import memcache
 
 from reportstool.config import *
 
@@ -63,5 +64,7 @@ def get_db():
 
 def get_mbdb():
    return psycopg2.connect('host=127.0.0.1 dbname=' + app.config['PGSQL_MB_DB'] + ' user=' + app.config['PGSQL_MB_USER'])
+
+cache = memcache.Client(['127.0.0.1:11211'])
 
 import reportstool.views
