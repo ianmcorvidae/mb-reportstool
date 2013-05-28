@@ -10,8 +10,10 @@
 
 <h2>Reports</h2>
 <ul>
+  {% if reports %}
   {% for report in reports %}
   <li><a href="{{ url_for('report_view', reportid=report[1]) }}">{{ report[2] }} by {{ report[0] }}</a></li>
   {% endfor %}
+  {% endif %}
 </ul>
 {% endblock %}
