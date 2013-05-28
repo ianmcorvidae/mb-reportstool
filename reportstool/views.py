@@ -68,7 +68,9 @@ def new():
         if cur.rowcount > 0:
             flash('Successfully inserted!')
             newid = cur.fetchone()[0]
-        else: newid = None
+        else:
+            flash('Something went wrong.')
+            newid = None
         db.commit()
         cur.close()
         db.close()
@@ -92,6 +94,8 @@ def report(reportid):
         cur.execute('UPDATE reports SET name = %s, sql = %s, template = %s WHERE id = %s', [name, sql, template, reportid])
         if cur.rowcount > 0:
             flash('Successfully updated!')
+        else:
+            flash('Something went wrong.')
         db.commit()
         cur.close()
         db.close()
@@ -122,6 +126,8 @@ def report_delete(reportid):
         cur.execute('DELETE FROM reports WHERE id = %s', [reportid])
         if cur.rowcount > 0:
             flash('Successfully deleted!')
+        else:
+            flash('Something went wrong.')
         db.commit()
         cur.close()
         db.close()
