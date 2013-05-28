@@ -62,6 +62,6 @@ def get_db():
    return psycopg2.connect('dbname=' + app.config['PGSQL_DB'] + ' user=' + app.config['PGSQL_USER'])
 
 def get_mbdb():
-   return psycopg2.connect('dbname=' + app.config['PGSQL_MB_DB'] + ' user=' + app.config['PGSQL_USER'])
+   return psycopg2.connect('dbname=' + app.config['PGSQL_MB_DB'] + ' user=' + app.config['PGSQL_MB_USER'])
 
 import reportstool.views
