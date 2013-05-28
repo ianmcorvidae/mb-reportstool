@@ -8,3 +8,5 @@ PGSQL_USER = 'reports'
 PGSQL_MB_DB = 'musicbrainz_db'
 PGSQL_MB_USER = 'musicbrainz'
 
+ERROR_LOG = ''
+WARNING_LOG = ''
