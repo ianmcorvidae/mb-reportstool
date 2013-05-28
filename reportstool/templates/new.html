@@ -3,10 +3,10 @@
 
 {% block content %}
 <form method="post">
-  <input type="text" name="name" style="width: 100%" />
-  <textarea data-widearea="enable" name="sql" placeholder="SQL"></textarea>
-  <input type="text" name="template_headers" style="width: 100%" placeholder"Table header" />
-  <textarea data-widearea="enable" name="template" placeholder="Template"></textarea>
+  <label for="id-name">Report name:</label><input type="text" name="name" id="id-name" style="width: 100%" />
+  <label for="id-name">SQL:</label><textarea data-widearea="enable" name="sql" id="id-sql" placeholder="SQL"></textarea>
+  <label for="id-name">Table Header:</label><input type="text" name="template_headers" id="id-template_headers" style="width: 100%" placeholder"Table header" />
+  <label for="id-name">Table Row Template:</label><textarea data-widearea="enable" name="template" id="id-template" placeholder="Template"></textarea>
   <input type="submit" value="Add report!" />
 </form>
 {% endblock %}
