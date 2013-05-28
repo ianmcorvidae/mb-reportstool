@@ -193,9 +193,15 @@ def getreport(reportid, requireuser=True):
 def runtemplate(template, row):
     try:
         renderer=jinja2.Template(template)
-        return renderer.render(row=[entry.decode('utf-8') for entry in row])
+        return renderer.render(row=[process_entry(entry) for entry in row])
     except Exception, e:
         return e
+
+def process_entry(entry):
+    if isinstance(entry, basestring):
+        return entry.decode('utf-8')
+    else:
+        return entry
 
 # Login/logout-related views
 @app.route('/login')
