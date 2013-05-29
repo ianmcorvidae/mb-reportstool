@@ -18,12 +18,18 @@ from __future__ import division, absolute_import
 from flask import Flask
 from flask.ext.login import LoginManager, UserMixin
 
+import jinja2_highlight
+
 import psycopg2
 import memcache
 
 from reportstool.config import *
 
-app = Flask(__name__)
+class MyFlask(Flask):
+    jinja_options = dict(Flask.jinja_options)
+    jinja_options.setdefault('extensions', []).append('jinja2_highlight.HighlightExtension')
+
+app = MyFlask(__name__)
 app.config.from_object(__name__)
 
 @app.before_first_request
