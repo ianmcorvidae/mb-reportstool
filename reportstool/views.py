@@ -57,21 +57,6 @@ def index():
 
         return render_template("index.html", client_id=app.config['OAUTH_CLIENT_ID'], redirect_uri=app.config['OAUTH_REDIRECT_URI'], csrf=rand, reports=reports)
 
-@app.route('/dashboard')
-@login_required
-def dashboard():
-    db = get_db()
-    cur = db.cursor()
-    cur.execute("SELECT id, name FROM reports WHERE editor = %s", [current_user.id])
-    if cur.rowcount > 0:
-        reports = cur.fetchall()
-    else:
-        reports = None
-    cur.close()
-    db.close()
-
-    return render_template("dashboard.html", reports=reports)
-
 @app.route('/new', methods=['GET', 'POST'])
 @login_required
 def new():
@@ -95,7 +80,7 @@ def new():
         if newid:
             return redirect(url_for("report", reportid=newid))
         else:
-            return redirect(url_for('dashboard'))
+            return redirect(url_for('index'))
     else:
         return render_template("report/new.html")
 
@@ -125,9 +110,10 @@ def report_edit(reportid):
             cur.close()
             db.close()
             cache.delete_multi([reportid], key_prefix='reportstool:')
+            return redirect(url_for("report_view", reportid=reportid))
         else:
             flash('No changes.')
-        return redirect(url_for("report", reportid=reportid))
+            return redirect(url_for("report_edit", reportid=reportid))
     else:
         mbdb = get_mbdb()
         mbcur = mbdb.cursor()
@@ -159,9 +145,9 @@ def report_delete(reportid):
         db.commit()
         cur.close()
         db.close()
-        return redirect(url_for("dashboard"))
+        return redirect(url_for("index"))
     else:
-        return render_template("report/delete.html")
+        return render_template("report/delete.html", report=report)
 
 @app.route('/report/<reportid>/view')
 def report_view(reportid):
@@ -270,7 +256,7 @@ def oauth_callback():
         if username:
             login_user(User(username))
             flash("Logged in!")
-            return redirect(request.args.get("next") or url_for("dashboard"))
+            return redirect(request.args.get("next") or url_for("index"))
         else:
             flash('Could not find username, please try again.')
     else:

@@ -11,6 +11,7 @@ dt, dd { float: left; }
 dt { clear: left; line-height: 20px; }
 dd { line-height: 20px; padding-right: 3px; }
 h1 { margin: 0 }
+h2 { margin: 5px 0; font-size: 24px }
 hr {
     margin: 0;
     color: #bbb;
@@ -47,15 +48,9 @@ table tr:last-child td, table tr:last-child th {
     background-color: whitesmoke;
 }
 
-
-.collapse {
-  position: relative;
-  height: 0;
-  overflow: hidden;
-  -webkit-transition: height 0.35s ease;
-     -moz-transition: height 0.35s ease;
-       -o-transition: height 0.35s ease;
-          transition: height 0.35s ease;
+.nav-links {
+    float: right;
+    margin-top: 10px;
 }
 
 /* header styling */

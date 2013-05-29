@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+
+{% block header %}
+<div class="nav-links">
+{%- if current_user.is_authenticated() and current_user.id == report[0] %}
+  <a href="{{ url_for('report', reportid=reportid) }}">Info</a> |
+  <a href="{{ url_for('report_edit', reportid=reportid) }}">Edit</a> |
+  <a href="{{ url_for('report_view', reportid=reportid) }}">View</a> |
+  <a href="{{ url_for('report_delete', reportid=reportid) }}">Delete</a>
+{% else %}
+  <a href="{{ url_for('report', reportid=reportid) }}">Info</a> |
+  <a href="{{ url_for('report_view', reportid=reportid) }}">View</a>
+{% endif -%}
+</div>
+<h2>Report "{{ report[1] }}" by <a href="https://musicbrainz.org/user/{{report[0]}}">{{ report[0] }}</a></h2>
+{% endblock %}

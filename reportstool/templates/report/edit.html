@@ -1,8 +1,7 @@
-{% extends "layout.html" %}
+{% extends "report/layout.html" %}
 {% block title %}Edit Report{% endblock %}
 
 {% block content %}
-<h2>Edit report: <a href="{{ url_for('report', reportid=reportid) }}">{{ report[1] }}</a></h2>
 <form method="post">
   <label for="id-name">Report name:</label><input type="text" name="name" id="id-name" style="width: 100%" value="{{ report[1] }}" />
   <label for="id-name">SQL:</label><textarea data-widearea="enable" name="sql" id="id-sql" placeholder="SQL">{{ report[2] }}</textarea>

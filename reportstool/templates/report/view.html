@@ -1,16 +1,9 @@
-{% extends "layout.html" %}
+{% extends "report/layout.html" %}
 {% block title %}{{ report[1] }}{% endblock %}
 
 {% block content %}
-<h2>
-   {% if current_user.is_authenticated() and current_user.id == report[0] %}
-     <a href="{{ url_for('report', reportid=reportid) }}">{{ report[1] }}</a>
-   {% else %}
-     {{ report[1] }} by <a href="https://musicbrainz.org/user/{{report[0]}}">{{ report[0] }}</a>
-   {% endif %}
-</h2>
-{% if time %}<p>Rendered: {{time}}</p>{% endif %}
-{% if extracted %}
+{%- if time -%}<p>Rendered: {{time}}</p>{%- endif -%}
+{%- if extracted -%}
   <table class="zebra">
     <thead><tr>{{ report[4] | safe }}</tr></thead>
     <tbody>
@@ -19,13 +12,13 @@
     {% endfor %}
     </tbody>
   </table>
-{% elif not error %}
+{%- elif not error -%}
   <p>
     <strong>No results! Either you're done or you wrote the query wrong.</strong>
   </p>
-{% else %}
+{%- else -%}
   <p>
     <strong>Query failed: <span style="color: red">{{ error }}</span></strong>
   </p>
-{% endif %}
+{%- endif -%}
 {% endblock %}

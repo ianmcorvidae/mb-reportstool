@@ -11,25 +11,28 @@
         <div class="container">
           <div class="content">
             <div style="float:right">
-              {% if current_user.is_authenticated() %}
+              {%- if current_user.is_authenticated() -%}
                 <a href="https://musicbrainz.org/user/{{current_user.id}}">{{ current_user.id }}</a>
-                <a href="{{ url_for('dashboard') }}">(dashboard)</a>
-                <a href="/logout">(log out)</a>
-              {% endif %}
+                <a href="{{ url_for('new') }}">(new report)</a>
+                <a href="{{ url_for('logout') }}">(log out)</a>
+              {%- else -%}
+                <a href="/">(log in)</a>
+              {%- endif -%}
             </div>
-            {% with messages = get_flashed_messages() %}
-              {% if messages %}
+            {%- with messages = get_flashed_messages() -%}
+              {%- if messages -%}
                 <ul class="flashes">
-                {% for message in messages %}
+                {%- for message in messages -%}
                   <li>{{ message }}</li>
-                {% endfor %}
+                {%- endfor -%}
                 </ul>
-              {% endif %}
-            {% endwith %}
+              {%- endif -%}
+            {%- endwith -%}
             <h1><a class="head_title" href="{{ url_for('index') }}">MusicBrainz Sandbox Reports Tool</a></h1>
-            {% block content %}{% endblock %}
+            {%- block header %}{% endblock -%}
+            {%- block content %}{% endblock -%}
           </div>
     </div>
-    {% block js %}{% endblock %}
+    {%- block js %}{% endblock -%}
     </body>
 </html>
