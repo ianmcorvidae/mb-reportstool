@@ -3,9 +3,9 @@
 
 {% block content %}
 {% if current_user.is_authenticated() %}
-  <p>Hello! There's not much to see here, you may prefer to look at <a href="{{ url_for('dashboard') }}">your dashboard</a> instead.</p>
+  <p>Welcome, {{ current_user.id }}. Reports are listed below!</p>
 {% else %}
-  <p>Welcome to the MusicBrainz Sandbox Reports tool! Please log in with your MusicBrainz account to make reports.</p>
+  <p>Welcome to the MusicBrainz Sandbox Reports tool! Please log in with your MusicBrainz account to make reports, or view any of the reports below.</p>
 
   <form action="https://musicbrainz.org/oauth2/authorize" method="get">
     <input type="hidden" name="response_type" value="code" />
@@ -21,7 +21,7 @@
 <ul>
   {% if reports %}
   {% for report in reports %}
-  <li><a href="{{ url_for('report_view', reportid=report[1]) }}">{{ report[2] }} by {{ report[0] }}</a></li>
+  <li><a href="{{ url_for('report_view', reportid=report[1]) }}">{{ report[2] }} by {{ report[0] }}</a> [<a href="{{ url_for('report', reportid=report[1]) }}">info</a>]</li>
   {% endfor %}
   {% endif %}
 </ul>

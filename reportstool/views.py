@@ -110,10 +110,9 @@ def report_edit(reportid):
             cur.close()
             db.close()
             cache.delete_multi([reportid], key_prefix='reportstool:')
-            return redirect(url_for("report_view", reportid=reportid))
         else:
             flash('No changes.')
-            return redirect(url_for("report_edit", reportid=reportid))
+        return redirect(url_for("report_edit", reportid=reportid))
     else:
         mbdb = get_mbdb()
         mbcur = mbdb.cursor()
