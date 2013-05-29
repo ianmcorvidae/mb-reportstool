@@ -19,6 +19,10 @@
     {% endfor %}
     </tbody>
   </table>
+{% elif not error %}
+  <p>
+    <strong>No results! Either you're done or you wrote the query wrong.</strong>
+  </p>
 {% else %}
   <p>
     <strong>Query failed: <span style="color: red">{{ error }}</span></strong>

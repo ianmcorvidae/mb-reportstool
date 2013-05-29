@@ -97,12 +97,12 @@ def new():
         else:
             return redirect(url_for('dashboard'))
     else:
-        return render_template("new.html")
+        return render_template("report/new.html")
 
 @app.route('/report/<reportid>')
 def report(reportid):
     report = getreport(reportid, False)
-    return render_template("report.html", report=report, reportid=reportid)
+    return render_template("report/info.html", report=report, reportid=reportid)
 
 @app.route('/report/<reportid>/edit', methods=['GET', 'POST'])
 @login_required
@@ -141,7 +141,7 @@ def report_edit(reportid):
         finally:
             mbcur.close()
             mbdb.close()
-        return render_template("reportedit.html", report=report, extracted=vals, error=error, reportid=reportid)
+        return render_template("report/edit.html", report=report, extracted=vals, error=error, reportid=reportid)
 
 @app.route('/report/<reportid>/delete', methods=['GET', 'POST'])
 @login_required
@@ -187,7 +187,7 @@ def report_view(reportid):
         finally:
             mbcur.close()
             mbdb.close()
-    return render_template("reportview.html", report=report, extracted=vals, error=error, reportid=reportid, time=rtime)
+    return render_template("report/view.html", report=report, extracted=vals, error=error, reportid=reportid, time=rtime)
 
 def getreport(reportid, requireuser=True):
     db = get_db()
