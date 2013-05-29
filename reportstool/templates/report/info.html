@@ -8,7 +8,7 @@
 {% block content %}
 <dl>
   <dt>SQL</dt><dd>{% highlight 'postgres' %}{{ report[2] }}{% endhighlight %}</dd>
-  <dt>Header</dt><dd><code>{{ report[4] }}</code></dd>
-  <dt>Template</dt><dd><code><pre>{{ report[3] }}</pre></code></dd>
+  <dt>Header</dt><dd>{% highlight 'html+jinja' %}{{ report[4] }}{% endhighlight %}</dd>
+  <dt>Template</dt><dd>{% highlight 'html+jinja' %}{{ report[3] }}{% endhighlight %}</dd>
 </dl>
 {% endblock %}
