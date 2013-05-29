@@ -125,7 +125,7 @@ def report_edit(reportid):
         mbcur = mbdb.cursor()
         try:
             mbcur.execute('EXPLAIN ' + report[2])
-            vals = mbcur.fetchall()
+            vals = [(process_entry(entry[0]),) for entry in mbcur.fetchall()]
             error = None
         except psycopg2.ProgrammingError, e:
             vals = None
