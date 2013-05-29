@@ -176,6 +176,7 @@ def report_view(reportid):
         except psycopg2.ProgrammingError, e:
             vals = None
             error = e
+            rtime = 0
         finally:
             mbcur.close()
             mbdb.close()
