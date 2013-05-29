@@ -32,7 +32,14 @@ import datetime
 def index():
     db = get_db()
     cur = db.cursor()
-    cur.execute("SELECT editor, id, name FROM reports ORDER BY editor, id")
+    query = "SELECT editor, id, name FROM reports"
+    if current_user.is_authenticated():
+        query = query + " ORDER BY editor = %s DESC, editor, id"
+        cur.execute(query, [current_user.id])
+    else:
+        query = query + " ORDER BY editor, id"
+        cur.execute(query)
+
     if cur.rowcount > 0:
         reports = cur.fetchall()
     else:
