@@ -2,7 +2,9 @@
 {% block title %}Report Info - {{ report[1] }}{% endblock %}
 
 {% block content %}
-<p>SQL: <code>{{ report[2] }}</code></p>
-<p>Header: <code>{{ report[4] }}</code></p>
-<p>Template: <code>{{ report[3] }}</code></p>
+<dl>
+  <dt>SQL</dt><dd><code><pre>{{ report[2] }}</pre></code></dd>
+  <dt>Header</dt><dd><code>{{ report[4] }}</code></dd>
+  <dt>Template</dt><dd><code><pre>{{ report[3] }}</pre></code></dd>
+</dl>
 {% endblock %}
