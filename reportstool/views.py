@@ -146,7 +146,7 @@ def report_delete(reportid):
         db.close()
         return redirect(url_for("index"))
     else:
-        return render_template("report/delete.html", report=report)
+        return render_template("report/delete.html", report=report, reportid=reportid)
 
 @app.route('/report/<reportid>/view')
 def report_view(reportid):
