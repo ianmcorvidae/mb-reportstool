@@ -69,7 +69,9 @@ def get_db():
    return psycopg2.connect('host=127.0.0.1 dbname=' + app.config['PGSQL_DB'] + ' user=' + app.config['PGSQL_USER'])
 
 def get_mbdb():
-   return psycopg2.connect('host=127.0.0.1 dbname=' + app.config['PGSQL_MB_DB'] + ' user=' + app.config['PGSQL_MB_USER'])
+   conn = psycopg2.connect('host=127.0.0.1 dbname=' + app.config['PGSQL_MB_DB'] + ' user=' + app.config['PGSQL_MB_USER'])
+   conn.set_session(readonly=True)
+   return conn
 
 cache = memcache.Client(['127.0.0.1:11211'])
 
