@@ -5,7 +5,7 @@
 {%- if time -%}<p>Rendered: {{time}}</p>{%- endif -%}
 {%- if extracted -%}
   <p>{{ extracted|length }} results</p>
-  <table class="zebra">
+  <table class="zebra sortable">
     <thead><tr>{{ report[4] | safe }}</tr></thead>
     <tbody>
     {% for line in extracted %}
@@ -22,4 +22,8 @@
     <strong>Query failed: <span style="color: red">{{ error }}</span></strong>
   </p>
 {%- endif -%}
+{% endblock %}
+
+{% block js %}
+<script src="/static/sorttable.js"></script>
 {% endblock %}
