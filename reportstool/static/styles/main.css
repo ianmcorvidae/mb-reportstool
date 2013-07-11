@@ -25,6 +25,7 @@ pre { margin: 0 }
 textarea {
     width: 100%;
     height: 200px;
+    box-sizing: border-box;
 }
 
 table {
