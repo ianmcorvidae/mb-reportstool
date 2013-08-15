@@ -261,7 +261,7 @@ def oauth_callback():
         code = request.args.get('code')
         username = check_mb_account(code)
         if username:
-            login_user(User(username))
+            login_user(User(username), remember=True)
             flash("Logged in!")
             return redirect(request.args.get("next") or url_for("index"))
         else:
