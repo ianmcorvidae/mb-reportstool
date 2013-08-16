@@ -125,7 +125,7 @@ def report_edit(reportid):
         mbcur = mbdb.cursor()
         try:
             mbcur.execute('EXPLAIN ' + report[2])
-            vals = [(process_entry(entry[0]),) for entry in mbcur.fetchall()]
+            vals = mbcur.fetchall()
             error = None
         except psycopg2.ProgrammingError, e:
             vals = None
@@ -199,20 +199,14 @@ def getreport(reportid, requireuser=True):
         abort(403)
     cur.close()
     db.close()
-    return [process_entry(entry) for entry in report]
+    return report
 
 def runtemplate(template, row):
     try:
         renderer=jinja2.Template(template)
-        return renderer.render(row=[process_entry(entry) for entry in row])
+        return renderer.render(row=row)
     except Exception, e:
         return e
-
-def process_entry(entry):
-    if isinstance(entry, basestring):
-        return entry.decode('utf-8')
-    else:
-        return entry
 
 # Login/logout-related views
 @app.route('/login')
