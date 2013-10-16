@@ -34,14 +34,19 @@ def index():
     cur = db.cursor()
     query = "SELECT editor, id, name FROM reports"
     if current_user.is_authenticated():
-        query = query + " ORDER BY editor = %s DESC, editor, id"
+        query = query + " ORDER BY editor = %s DESC, editor, name, id"
         cur.execute(query, [current_user.id])
     else:
         query = query + " ORDER BY editor, id"
         cur.execute(query)
 
     if cur.rowcount > 0:
-        reports = cur.fetchall()
+        results = cur.fetchall()
+        reports = {}
+        for report in results:
+            if report[0] not in reports:
+                reports[report[0]] = []
+            reports[report[0]].append(report)
     else:
         reports = None
     cur.close()

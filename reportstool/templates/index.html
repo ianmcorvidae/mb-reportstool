@@ -20,8 +20,11 @@
 <h2>Reports</h2>
 <ul>
   {% if reports %}
-  {% for report in reports %}
-  <li><a href="{{ url_for('report_view', reportid=report[1]) }}">{{ report[2] }} by {{ report[0] }}</a> [<a href="{{ url_for('report', reportid=report[1]) }}">info</a>]</li>
+  {% for editor, editor_reports in reports %}
+    <li><b>{{ editor }}</b></li>
+    {% for report in editor_reports %}
+    <li><a href="{{ url_for('report_view', reportid=report[1]) }}">{{ report[2] }} by {{ report[0] }}</a> [<a href="{{ url_for('report', reportid=report[1]) }}">info</a>]</li>
+    {% endfor %}
   {% endfor %}
   {% endif %}
 </ul>
