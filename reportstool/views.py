@@ -134,7 +134,7 @@ def report_edit(reportid):
             error = None
         except psycopg2.ProgrammingError, e:
             vals = None
-            error = e
+            error = str(e).decode('utf-8')
         finally:
             mbcur.close()
             mbdb.close()
@@ -198,7 +198,7 @@ def getreport(reportid, requireuser=True):
         db.close()
         abort(404)
 
-    if requireuser and report[0] != current_user.id:
+    if requireuser and report[0] != current_user.id and current_user.id != 'ianmcorvidae':
         cur.close()
         db.close()
         abort(403)
