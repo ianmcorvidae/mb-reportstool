@@ -10,3 +10,5 @@ PGSQL_MB_USER = 'musicbrainz'
 
 ERROR_LOG = ''
 WARNING_LOG = ''
+
+TRUSTED_PROXIES = []

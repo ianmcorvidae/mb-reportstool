@@ -55,7 +55,8 @@ def index():
         return render_template("index.html", reports=reports)
     else:
         try:
-            ip = request.environ['HTTP_X_FORWARDED_FOR'].split(',')[-1].strip()
+            proxies = request.environ['HTTP_X_FORWARDED_FOR'].split(',')[:-1]
+            ip = [x for x in proxies if x not in app.config['TRUSTED_PROXIES']][-1]
         except KeyError:
             ip = request.environ['REMOTE_ADDR']
         rand = base64.urlsafe_b64encode(os.urandom(30))
@@ -217,7 +218,8 @@ def runtemplate(template, row):
 @app.route('/login')
 def login():
     try:
-        ip = request.environ['HTTP_X_FORWARDED_FOR'].split(',')[-1].strip()
+        proxies = request.environ['HTTP_X_FORWARDED_FOR'].split(',')[:-1]
+        ip = [x for x in proxies if x not in app.config['TRUSTED_PROXIES']][-1]
     except KeyError:
         ip = request.environ['REMOTE_ADDR']
     rand = base64.urlsafe_b64encode(os.urandom(30))
