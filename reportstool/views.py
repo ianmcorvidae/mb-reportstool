@@ -58,7 +58,10 @@ def index():
             proxies = request.environ['HTTP_X_FORWARDED_FOR'].split(',')[:-1]
             ip = [x for x in proxies if x not in app.config['TRUSTED_PROXIES']][-1]
         except KeyError:
-            ip = request.environ['REMOTE_ADDR']
+            try:
+                ip = request.environ['HTTP_X_MB_REMOTE_ADDR']
+            except KeyError:
+                ip = request.environ['REMOTE_ADDR']
         rand = base64.urlsafe_b64encode(os.urandom(30))
 
         db = get_db()
@@ -221,7 +224,10 @@ def login():
         proxies = request.environ['HTTP_X_FORWARDED_FOR'].split(',')[:-1]
         ip = [x for x in proxies if x not in app.config['TRUSTED_PROXIES']][-1]
     except KeyError:
-        ip = request.environ['REMOTE_ADDR']
+        try:
+            ip = request.environ['HTTP_X_MB_REMOTE_ADDR']
+        except KeyError:
+            ip = request.environ['REMOTE_ADDR']
     rand = base64.urlsafe_b64encode(os.urandom(30))
 
     db = get_db()
