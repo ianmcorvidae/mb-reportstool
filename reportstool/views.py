@@ -54,14 +54,7 @@ def index():
     if current_user.is_authenticated():
         return render_template("index.html", reports=reports)
     else:
-        try:
-            proxies = request.environ['HTTP_X_FORWARDED_FOR'].split(',')[:-1]
-            ip = [x for x in proxies if x not in app.config['TRUSTED_PROXIES']][-1]
-        except KeyError:
-            try:
-                ip = request.environ['HTTP_X_MB_REMOTE_ADDR']
-            except KeyError:
-                ip = request.environ['REMOTE_ADDR']
+        ip = get_ip()
         rand = base64.urlsafe_b64encode(os.urandom(30))
 
         db = get_db()
@@ -220,14 +213,7 @@ def runtemplate(template, row):
 # Login/logout-related views
 @app.route('/login')
 def login():
-    try:
-        proxies = request.environ['HTTP_X_FORWARDED_FOR'].split(',')[:-1]
-        ip = [x for x in proxies if x not in app.config['TRUSTED_PROXIES']][-1]
-    except KeyError:
-        try:
-            ip = request.environ['HTTP_X_MB_REMOTE_ADDR']
-        except KeyError:
-            ip = request.environ['REMOTE_ADDR']
+    ip = get_ip()
     rand = base64.urlsafe_b64encode(os.urandom(30))
 
     db = get_db()
@@ -243,10 +229,7 @@ def login():
 def oauth_callback():
     error = request.args.get('error')
     if not error:
-        try:
-            ip = request.environ['HTTP_X_FORWARDED_FOR'].split(',')[-1].strip()
-        except KeyError:
-            ip = request.environ['REMOTE_ADDR']
+        ip = get_ip()
         csrf = request.args.get('state')
         db = get_db()
         cur = db.cursor()
@@ -283,6 +266,15 @@ def logout():
     logout_user()
     flash("Logged out.")
     return redirect(url_for("index"))
+
+def get_ip():
+    try:
+        return request.environ['HTTP_X_FORWARDED_FOR'].split(',')[-1].strip()
+    except KeyError:
+        try:
+            return request.environ['HTTP_X_MB_REMOTE_ADDR']
+        except KeyError:
+            return request.environ['REMOTE_ADDR']
 
 def check_mb_account(auth_code):
     url = 'https://musicbrainz.org/oauth2/token'
