@@ -1,0 +1,5 @@
+Flask
+Flask-Login
+psycopg2
+python-memcached
+jinja2-highlight
