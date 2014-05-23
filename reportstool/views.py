@@ -25,6 +25,7 @@ import json
 import os
 import base64
 import psycopg2
+import psycopg2.extras
 import jinja2
 import datetime
 
@@ -74,9 +75,10 @@ def new():
         sql = request.form['sql']
         template = request.form['template']
         template_headers = request.form['template_headers']
+        defaults = request.form['defaults']
         db = get_db()
         cur = db.cursor()
-        cur.execute('INSERT INTO reports (editor, name, sql, template, template_headers) VALUES (%s, %s, %s, %s, %s) RETURNING id', [current_user.id, name, sql, template, template_headers])
+        cur.execute('INSERT INTO reports (editor, name, sql, template, template_headers, defaults) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id', [current_user.id, name, sql, template, template_headers, defaults])
         if cur.rowcount > 0:
             flash('Successfully inserted!')
             newid = cur.fetchone()[0]
@@ -107,10 +109,11 @@ def report_edit(reportid):
         sql = request.form['sql']
         template = request.form['template']
         template_headers = request.form['template_headers']
-        if (name != report[1] or sql != report[2] or template != report[3] or template_headers != report[4]):
+        defaults = request.form['defaults']
+        if (name != report[1] or sql != report[2] or template != report[3] or template_headers != report[4] or defaults != report[5]):
             db = get_db()
             cur = db.cursor()
-            cur.execute('UPDATE reports SET name = %s, sql = %s, template = %s, template_headers = %s WHERE id = %s', [name, sql, template, template_headers, reportid])
+            cur.execute('UPDATE reports SET name = %s, sql = %s, template = %s, template_headers = %s, defaults=%s WHERE id = %s', [name, sql, template, template_headers, defaults, reportid])
             if cur.rowcount > 0:
                 flash('Successfully updated!')
             else:
@@ -126,10 +129,13 @@ def report_edit(reportid):
         mbdb = get_mbdb()
         mbcur = mbdb.cursor()
         try:
-            mbcur.execute('EXPLAIN ' + report[2])
+            mbcur.execute('EXPLAIN ' + report[2], json.loads(report[5]))
             vals = mbcur.fetchall()
             error = None
         except psycopg2.ProgrammingError, e:
+            vals = None
+            error = str(e).decode('utf-8')
+        except ValueError, e:
             vals = None
             error = str(e).decode('utf-8')
         finally:
@@ -162,14 +168,17 @@ def report_view(reportid):
     report = getreport(reportid, False)
     error = None
     prerendered = cache.get_multi([reportid], key_prefix='reportstool:')
+    query_args = {}
     if prerendered.get(str(reportid), False):
         vals = prerendered.get(str(reportid))['vals']
         rtime = prerendered.get(str(reportid))['time']
     else:
         mbdb = get_mbdb()
-        mbcur = mbdb.cursor()
+        mbcur = mbdb.cursor(cursor_factory=psycopg2.extras.DictCursor)
         try:
-            mbcur.execute(report[2])
+            query_args = json.loads(report[5])
+            query_args.update(request.args.to_dict())
+            mbcur.execute(report[2], query_args)
             vals = [runtemplate(report[3], row) for row in mbcur.fetchall()]
             rtime = datetime.datetime.utcnow()
             try:
@@ -177,17 +186,21 @@ def report_view(reportid):
             except: pass # hack since things >1mb fail on rika
         except psycopg2.ProgrammingError, e:
             vals = None
-            error = e
+            error = str(e).decode('utf-8')
+            rtime = 0
+        except ValueError, e:
+            vals = None
+            error = str(e).decode('utf-8')
             rtime = 0
         finally:
             mbcur.close()
             mbdb.close()
-    return render_template("report/view.html", report=report, extracted=vals, error=error, reportid=reportid, time=rtime)
+    return render_template("report/view.html", report=report, extracted=vals, error=error, reportid=reportid, time=rtime, query_args=query_args)
 
 def getreport(reportid, requireuser=True):
     db = get_db()
     cur = db.cursor()
-    cur.execute("SELECT editor, name, sql, template, template_headers FROM reports WHERE id = %s", [reportid])
+    cur.execute("SELECT editor, name, sql, template, template_headers, defaults FROM reports WHERE id = %s", [reportid])
     if cur.rowcount > 0:
         report = cur.fetchone()
     else:
