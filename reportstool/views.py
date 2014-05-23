@@ -28,6 +28,7 @@ import psycopg2
 import psycopg2.extras
 import jinja2
 import datetime
+import hashlib
 
 @app.route('/')
 def index():
@@ -113,7 +114,7 @@ def report_edit(reportid):
         if (name != report[1] or sql != report[2] or template != report[3] or template_headers != report[4] or defaults != report[5]):
             db = get_db()
             cur = db.cursor()
-            cur.execute('UPDATE reports SET name = %s, sql = %s, template = %s, template_headers = %s, defaults=%s WHERE id = %s', [name, sql, template, template_headers, defaults, reportid])
+            cur.execute('UPDATE reports SET name = %s, sql = %s, template = %s, template_headers = %s, defaults=%s, last_modified=now() WHERE id = %s', [name, sql, template, template_headers, defaults, reportid])
             if cur.rowcount > 0:
                 flash('Successfully updated!')
             else:
@@ -121,7 +122,6 @@ def report_edit(reportid):
             db.commit()
             cur.close()
             db.close()
-            cache.delete_multi([reportid], key_prefix='reportstool:')
         else:
             flash('No changes.')
         return redirect(url_for("report_edit", reportid=reportid))
@@ -166,13 +166,28 @@ def report_delete(reportid):
 @app.route('/report/<reportid>/view')
 def report_view(reportid):
     report = getreport(reportid, False)
+    last_repl_date = getreplication()
     error = None
+    vals = None
     prerendered = cache.get_multi([reportid], key_prefix='reportstool:')
     query_args = {}
-    if prerendered.get(str(reportid), False):
-        vals = prerendered.get(str(reportid))['vals']
-        rtime = prerendered.get(str(reportid))['time']
-    else:
+    try:
+        query_args = json.loads(report[5])
+        query_args.update(request.args.to_dict())
+    except ValueError, e:
+        error = str(e).decode('utf-8')
+        rtime = 0
+
+    key = "%s:%s" % (reportid, hashlib.sha256("|".join(["%s:%s" % (k, query_args[k]) for k in sorted(query_args.keys())])).hexdigest())
+    if not error and prerendered.get(key, False):
+        vals = prerendered.get(key)['vals']
+        rtime = prerendered.get(key)['time'].replace(tzinfo=psycopg2.tz.FixedOffsetTimezone(0))
+        if rtime < report[6] or rtime < last_repl_date:
+            cache.delete_multi(key, key_prefix='reportstool:')
+            vals = None
+            rtime = 0
+
+    if not error and not vals:
         mbdb = get_mbdb()
         mbcur = mbdb.cursor(cursor_factory=psycopg2.extras.DictCursor)
         try:
@@ -182,7 +197,7 @@ def report_view(reportid):
             vals = [runtemplate(report[3], row) for row in mbcur.fetchall()]
             rtime = datetime.datetime.utcnow()
             try:
-                cache.set_multi({str(reportid): {'time': rtime, 'vals': vals}}, time=60*60, key_prefix='reportstool:', min_compress_len=10000)
+                cache.set_multi({key: {'time': rtime, 'vals': vals}}, time=60*60, key_prefix='reportstool:', min_compress_len=10000)
             except: pass # hack since things >1mb fail on rika
         except psycopg2.ProgrammingError, e:
             vals = None
@@ -197,10 +212,23 @@ def report_view(reportid):
             mbdb.close()
     return render_template("report/view.html", report=report, extracted=vals, error=error, reportid=reportid, time=rtime, query_args=query_args)
 
+def getreplication():
+    mbdb = get_mbdb()
+    mbcur = mbdb.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    try:
+        mbcur.execute("SELECT last_replication_date from replication_control")
+        date = mbcur.fetchone()[0]
+    except psycopg2.ProgrammingError, e:
+        return None
+    finally:
+        mbcur.close()
+        mbdb.close()
+    return date
+    
 def getreport(reportid, requireuser=True):
     db = get_db()
-    cur = db.cursor()
-    cur.execute("SELECT editor, name, sql, template, template_headers, defaults FROM reports WHERE id = %s", [reportid])
+    cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur.execute("SELECT editor, name, sql, template, template_headers, defaults, last_modified FROM reports WHERE id = %s", [reportid])
     if cur.rowcount > 0:
         report = cur.fetchone()
     else:
