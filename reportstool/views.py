@@ -169,7 +169,6 @@ def report_view(reportid):
     last_repl_date = getreplication()
     error = None
     vals = None
-    prerendered = cache.get_multi([reportid], key_prefix='reportstool:')
     query_args = {}
     try:
         query_args = json.loads(report[5])
@@ -179,10 +178,13 @@ def report_view(reportid):
         rtime = 0
 
     key = "%s:%s" % (reportid, hashlib.sha256("|".join(["%s:%s" % (k, query_args[k]) for k in sorted(query_args.keys())])).hexdigest())
+    prerendered = cache.get_multi([key], key_prefix='reportstool:')
     if not error and prerendered.get(key, False):
+        app.logger.warning("Got %s from cache" % key)
         vals = prerendered.get(key)['vals']
         rtime = prerendered.get(key)['time'].replace(tzinfo=psycopg2.tz.FixedOffsetTimezone(0))
         if rtime < report[6] or rtime < last_repl_date:
+            app.logger.warning("%s rtime of %s is less than either last-modified %s or replication date %s" % (key, rtime, report[6], last_repl_date))
             cache.delete_multi(key, key_prefix='reportstool:')
             vals = None
             rtime = 0
@@ -198,7 +200,8 @@ def report_view(reportid):
             rtime = datetime.datetime.utcnow()
             try:
                 cache.set_multi({key: {'time': rtime, 'vals': vals}}, time=60*60, key_prefix='reportstool:', min_compress_len=10000)
-            except: pass # hack since things >1mb fail on rika
+                app.logger.warning("Set cache for key %s" % key)
+            except: app.logger.warning("Couldn't set cache for key %s" % key) # hack since things >1mb fail on rika
         except psycopg2.ProgrammingError, e:
             vals = None
             error = str(e).decode('utf-8')
