@@ -132,10 +132,7 @@ def report_edit(reportid):
             mbcur.execute('EXPLAIN ' + report[2], json.loads(report[5]))
             vals = mbcur.fetchall()
             error = None
-        except psycopg2.ProgrammingError, e:
-            vals = None
-            error = str(e).decode('utf-8')
-        except ValueError, e:
+        except Exception, e:
             vals = None
             error = str(e).decode('utf-8')
         finally:
@@ -202,11 +199,7 @@ def report_view(reportid):
                 cache.set_multi({key: {'time': rtime, 'vals': vals}}, time=60*60, key_prefix='reportstool:', min_compress_len=10000)
                 app.logger.warning("Set cache for key %s" % key)
             except: app.logger.warning("Couldn't set cache for key %s" % key) # hack since things >1mb fail on rika
-        except psycopg2.ProgrammingError, e:
-            vals = None
-            error = str(e).decode('utf-8')
-            rtime = 0
-        except ValueError, e:
+        except Exception, e:
             vals = None
             error = str(e).decode('utf-8')
             rtime = 0
