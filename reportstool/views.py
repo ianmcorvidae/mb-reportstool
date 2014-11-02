@@ -30,6 +30,12 @@ import jinja2
 import datetime
 import hashlib
 
+def decode_if_str(string):
+    if isinstance(string, str):
+        return string.decode('utf-8')
+    else:
+        return string
+
 @app.route('/')
 def index():
     db = get_db()
@@ -174,7 +180,7 @@ def report_view(reportid):
         error = str(e).decode('utf-8')
         rtime = 0
 
-    key = "%s:%s" % (reportid, hashlib.sha256("|".join(["%s:%s" % (k.decode('utf-8'), query_args[k].decode('utf-8')) for k in sorted(query_args.keys())])).hexdigest())
+    key = "%s:%s" % (reportid, hashlib.sha256("|".join(["%s:%s" % (decode_if_str(k), decode_if_str(query_args[k])) for k in sorted(query_args.keys())])).hexdigest())
     prerendered = cache.get_multi([key], key_prefix='reportstool:')
     if not error and prerendered.get(key, False):
         app.logger.warning("Got %s from cache" % key)
