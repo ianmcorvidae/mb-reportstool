@@ -82,7 +82,7 @@ def new():
         sql = request.form['sql']
         template = request.form['template']
         template_headers = request.form['template_headers']
-        defaults = request.form['defaults']
+        defaults = request.form['defaults'] or "{}"
         db = get_db()
         cur = db.cursor()
         cur.execute('INSERT INTO reports (editor, name, sql, template, template_headers, defaults) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id', [current_user.id, name, sql, template, template_headers, defaults])
@@ -116,7 +116,7 @@ def report_edit(reportid):
         sql = request.form['sql']
         template = request.form['template']
         template_headers = request.form['template_headers']
-        defaults = request.form['defaults']
+        defaults = request.form['defaults'] or "{}"
         if (name != report[1] or sql != report[2] or template != report[3] or template_headers != report[4] or defaults != report[5]):
             db = get_db()
             cur = db.cursor()
