@@ -2,8 +2,8 @@
 body, input, select, button { font-family: sans-serif; color: #111; }
 input:disabled, button:disabled { color: #666 }
 h1, h2, h3, h4 { font-family: sans-serif; }
-a  { color: #880101; }
-a:visited  { color: #010188; }
+a  { color: #010188; }
+a:visited  { color: #880101; }
 dl { margin: 0px; }
 ul { margin-bottom: 0px; margin-top: 0px; }
 dt::after { content: ': ' }
